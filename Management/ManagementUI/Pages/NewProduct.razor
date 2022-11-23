@@ -1,0 +1,335 @@
+﻿@page "/produtos/novo"
+@using static ManagementUI.ViewModels.ProductVM
+
+@inject NotificationService _notificationService
+@inject NavigationManager _navigationManager
+
+@inject IProducsService _productsService
+
+<div class="row mb-3">
+    <div class="col-12">
+        <h1 class="text-center">Novo Medicamento</h1>
+    </div>
+</div>
+
+<div class="container-fluid">
+    @if(CurrentPageNumber == 1)
+    {
+        <div class="row d-flex aligns-items-center justify-content-center">
+            <div class="col-lg-8 p-3">
+                <RadzenCard>
+                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Nome</RadzenText>
+                    <RadzenTextBox @bind-Value="Name" Placeholder="Cataflan..." Class="w-100" />
+                </RadzenCard>
+            </div>
+        </div>
+        <div class="row aligns-items-center justify-content-center">
+            <div class="col-lg-8 p-3">
+                <RadzenCard>
+                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Descrição</RadzenText>
+                    <RadzenTextArea @bind-Value=@Description Placeholder="Esse medicamento server para isso, aquilo, etc..." Class="w-100" />
+                </RadzenCard>
+            </div>
+        </div>
+    }
+    else if(CurrentPageNumber == 2)
+    {
+        <div class="container-fluid">
+            <div class="row d-flex aligns-items-center justify-content-center">
+                <div class="col-lg-3 p-3 text-center">
+                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Possui concentração?</RadzenText>
+                    <RadzenSwitch @bind-Value=@HasConcentration />
+                </div>
+            </div>
+        </div>
+        @if(HasConcentration)
+        {
+            <div class="row d-flex aligns-items-center justify-content-center">
+                <div class="col-lg-8 p-3">
+                    <RadzenCard>
+                        <RadzenCard>
+                            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Unidade de Medida</RadzenText>
+                            <RadzenDropDown AllowClear="true" TValue="string" Class="w-100" 
+                                Data=@MeasurementUnits TextProperty="MeasurementUnitDescription"
+                                Change=@(args => OnChangeMeasurementUnit((MeasurementUnitVM)args)) />
+                        </RadzenCard>
+                        <RadzenCard>
+                            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Digite as Concentrações:</RadzenText>
+                            <RadzenNumeric @bind-Value="NewConcentrationValue" TValue="double" Placeholder="0.0" Step="0.1" Class="w-100" />
+                            <RadzenButton Click=@(args => AddNewConcentration(args)) Icon="add" ButtonStyle="ButtonStyle.Primary" 
+                                Size="ButtonSize.ExtraSmall" />
+                        </RadzenCard>
+                        <RadzenCard>
+                            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Concentrações Selecionadas:</RadzenText>
+                            <RadzenDropDown Multiple="true" Chips="true" MaxSelectedLabels="20" AllowClear="true" 
+                                AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" 
+                                Data=@SelectedDrugsConcentrations @bind-Value=@SelectedDrugsConcentrations
+                                TextProperty="ConcentrationDescription" Class="w-100" />
+                        </RadzenCard>
+                    </RadzenCard>
+                </div>
+            </div>
+        }
+    }
+    else if(CurrentPageNumber == 3)
+    {
+        <div class="container-fluid">
+            <div class="row d-flex aligns-items-center justify-content-center">
+                <div class="col-lg-3 p-3 text-center">
+                    <h3>Deseja Salvar?</h3>
+                    <RadzenButton Click=@(args => SaveNewProductMedicine(args)) ButtonStyle="ButtonStyle.Success" 
+                        Size="ButtonSize.ExtraSmall" Text="Salvar"/>
+                    <RadzenButton Click=@(args => SaveNewProductMedicine(args)) ButtonStyle="ButtonStyle.Dark" 
+                        Size="ButtonSize.ExtraSmall" Text="Cancelar"/>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                <h3 class="text-center">Resumo:</h3>
+            </div>
+        </div>
+        <div class="row d-flex aligns-items-center justify-content-center">
+            <div class="col-lg-8 p-3">
+                <RadzenCard>
+                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Nome</RadzenText>
+                    <RadzenTextBox @bind-Value="Name" Placeholder="Cataflan..." Class="w-100" Disabled />
+                </RadzenCard>
+            </div>
+        </div>
+        <div class="row aligns-items-center justify-content-center">
+            <div class="col-lg-8 p-3">
+                <RadzenCard>
+                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Descrição</RadzenText>
+                    <RadzenTextArea @bind-Value=@Description Placeholder="Esse medicamento server para isso, aquilo, etc..." Class="w-100" Disabled />
+                </RadzenCard>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row d-flex aligns-items-center justify-content-center">
+                <div class="col-lg-3 p-3 text-center">
+                    <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Possui concentração?</RadzenText>
+                    <RadzenSwitch @bind-Value=@HasConcentration Disabled/>
+                </div>
+            </div>
+        </div>
+        @if(HasConcentration)
+        {
+            <div class="row d-flex aligns-items-center justify-content-center">
+                <div class="col-lg-8 p-3">
+                    <RadzenCard>
+                        <RadzenCard>
+                            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Unidade de Medida</RadzenText>
+                            <RadzenDropDown Disabled AllowClear="true" TValue="string" Class="w-100" 
+                                Data=@MeasurementUnits TextProperty="MeasurementUnitDescription" />
+                        </RadzenCard>
+                        <RadzenCard>
+                            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Concentrações Selecionadas:</RadzenText>
+                            <RadzenDropDown Disabled Multiple="true" Chips="true" MaxSelectedLabels="20" AllowClear="true" 
+                                AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" 
+                                Data=@SelectedDrugsConcentrations @bind-Value=@SelectedDrugsConcentrations
+                                TextProperty="ConcentrationDescription" Class="w-100" />
+                        </RadzenCard>
+                    </RadzenCard>
+                </div>
+            </div>
+        }
+    }
+</div>
+<nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+        <li class="page-item">
+            <a class="page-link" @onclick="(args)=>PreviousPageNumber(args)">Voltar</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" @onclick="(args)=>NextPageNumber(args)">Próximo</a>
+        </li>
+    </ul>
+</nav>
+
+@code {
+    bool HasConcentration { get; set; } = false;
+    static int MAXPAGENUMBER = 3;
+    int CurrentPageNumber { get; set; } = 1;
+    string Name { get; set; } = "";
+    string Description { get; set; } = "";
+    List<ConcentrationVM> SelectedDrugsConcentrations = new();
+    List<MeasurementUnitVM> MeasurementUnits = new()
+    {
+        new MeasurementUnitVM()
+        {
+            MeasurementUnitId = 1,
+            MeasurementUnitDescription = "mg/ml"
+        },
+        new MeasurementUnitVM()
+        {
+            MeasurementUnitId = 1,
+            MeasurementUnitDescription = "mcg/ml"
+        }
+    };
+    MeasurementUnitVM SelectedMeasurementUnit { get; set; } = new();
+    double NewConcentrationValue { get; set; }
+
+    void NextPageNumber(MouseEventArgs e)
+    {
+        if(CurrentPageNumber < MAXPAGENUMBER && ValidatePageChange(CurrentPageNumber + 1, CurrentPageNumber))
+            CurrentPageNumber += 1;
+    }
+
+    void PreviousPageNumber(MouseEventArgs e)
+    {
+        if(CurrentPageNumber > 1 && ValidatePageChange(CurrentPageNumber - 1, CurrentPageNumber))
+            CurrentPageNumber -= 1;
+    }
+
+    void SetPageNumber(MouseEventArgs e, int nextPageNumber)
+    {
+        if(nextPageNumber >= 1 && nextPageNumber <= MAXPAGENUMBER &&
+            ValidatePageChange(nextPageNumber, CurrentPageNumber))
+        {
+            CurrentPageNumber = nextPageNumber;
+        }
+    }
+
+    void HasConcentrationChange(bool value)
+    {
+        HasConcentration = value;
+    }
+
+    void OnChangeMeasurementUnit(MeasurementUnitVM e)
+    {
+        SelectedMeasurementUnit = new MeasurementUnitVM()
+        {
+            MeasurementUnitId = e.MeasurementUnitId,
+            MeasurementUnitDescription = e.MeasurementUnitDescription
+        };
+        foreach(var concentration in SelectedDrugsConcentrations)
+        {
+            concentration.MeasurementUnitId = SelectedMeasurementUnit.MeasurementUnitId;
+            concentration.ConcentrationDescription = $"{concentration.ConcentrationValue} {SelectedMeasurementUnit.MeasurementUnitDescription}";
+        }
+    }
+
+    void AddNewConcentration(MouseEventArgs e)
+    {
+        if (!ValidadeMeasurementUnit() || !ValidadeNewConcentration())
+            return;
+        SelectedDrugsConcentrations.Add(new ConcentrationVM()
+        {
+            MeasurementUnitId = SelectedMeasurementUnit.MeasurementUnitId,
+            ConcentrationValue = NewConcentrationValue,
+            ConcentrationDescription = $"{NewConcentrationValue} {SelectedMeasurementUnit.MeasurementUnitDescription}"
+        });
+        NewConcentrationValue = 0;
+    }
+
+    bool ValidatePageChange(int nextPageNumber, int currentPageNumber)
+    {
+        if (currentPageNumber == 1)
+            return ValidateFirstPage();
+        if (currentPageNumber == 2)
+            return ValidateSecondPage();
+        if(currentPageNumber == 3)
+            return ValidateFirstPage() && ValidateSecondPage();
+        return false;
+    }
+
+    bool ValidateFirstPage()
+    {
+        if(string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(Description))
+        {
+            var message = new NotificationMessage 
+            { 
+                Severity = NotificationSeverity.Error, 
+                Summary = "Campos Inválidos", 
+                Detail = "Preencha o Nome e Descrição do novo Produto/Medicamento!", 
+                Duration = 5000 
+            };
+            _notificationService.Notify(message);
+            return false;
+        }
+        return true;
+    }
+
+    bool ValidateSecondPage()
+    {
+        if (!HasConcentration)
+            return true;
+        if(!ValidadeMeasurementUnit())
+        {
+            var message = new NotificationMessage 
+            { 
+                Severity = NotificationSeverity.Error, 
+                Summary = "Campos Inválidos", 
+                Detail = "Preencha um valor válido para a unidade de medida!", 
+                Duration = 5000 
+            };
+            _notificationService.Notify(message);
+            return false;
+        }
+        if (!ValidadeSelectedConcentrations())
+        {
+            var message = new NotificationMessage 
+            { 
+                Severity = NotificationSeverity.Error, 
+                Summary = "Campos Inválidos", 
+                Detail = "Preencha um valor válido para as possíveis concentrações do novo produto/medicamento!", 
+                Duration = 5000 
+            };
+            _notificationService.Notify(message);
+            return false;
+        }
+        return true;
+    }
+
+    bool ValidadeMeasurementUnit()
+    {
+        if(SelectedMeasurementUnit == null ||
+            string.IsNullOrEmpty(SelectedMeasurementUnit?.MeasurementUnitDescription) ||
+            SelectedMeasurementUnit?.MeasurementUnitId == 0)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    bool ValidadeNewConcentration()
+    {
+        if (NewConcentrationValue <= 0)
+            return false;
+        return true;
+    }
+
+    bool ValidadeSelectedConcentrations()
+    {
+        if (SelectedDrugsConcentrations == null ||
+            ( !SelectedDrugsConcentrations.Any()))
+            return false;
+        return true;
+    }
+
+    async Task SaveNewProductMedicine(MouseEventArgs args)
+    {
+        ProductVM productVM = new ProductVM()
+        {
+            Name = Name,
+            Description = Description,
+            SelectedDrugsConcentrations = SelectedDrugsConcentrations
+        };
+        await _productsService.CreateNewProduct(productVM);
+        _navigationManager.NavigateTo("/products");
+        var message = new NotificationMessage 
+        { 
+            Severity = NotificationSeverity.Success, 
+            Summary = "Novo Medicamento Criado", 
+            Detail = $"Medicamento {Name} adicionado!", 
+            Duration = 8000 
+        };
+        _notificationService.Notify(message);
+    }
+
+    async Task CancelNewProductMedicine(MouseEventArgs args)
+    {
+        
+    }
+}
