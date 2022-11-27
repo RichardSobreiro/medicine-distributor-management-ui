@@ -10,8 +10,10 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration.GetValue<string>("BaseAPIUrl")) });
+
 builder.Services.AddScoped<NotificationService>();
 
 builder.Services.AddScoped<IProducsService, ProducsService>();
+builder.Services.AddScoped<IMeasurementUnitsService, MeasurementUnitsService>();
 
 await builder.Build().RunAsync();

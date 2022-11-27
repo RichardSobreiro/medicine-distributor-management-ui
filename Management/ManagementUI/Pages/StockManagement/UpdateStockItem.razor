@@ -1,0 +1,148 @@
+﻿@page "/estoque/editar/{ProductId}"
+@using static ManagementUI.ViewModels.ProductVM
+
+@inject NotificationService _notificationService
+@inject NavigationManager _navigationManager
+
+@inject IProducsService _productsService
+@inject IMeasurementUnitsService _measurementUnitsService
+
+<div class="row mb-3">
+    <div class="col-12">
+        <h1 class="text-center">Atualizar Estoque</h1>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row d-flex aligns-items-center justify-content-center">
+        <div style="min-width:420px;" class="col-lg-4 m-1">
+            <div class="card">
+                <div class="card-body">@Product.Name</div>
+            </div>
+        </div>
+    </div>
+    <div class="row d-flex aligns-items-center justify-content-center">
+        <div style="min-width:420px;" class="col-lg-4 m-1">
+            <div class="card">
+                <div class="card-body">@Product.Description</div>
+            </div>
+        </div>
+    </div>
+    @if (HasConcentration)
+    {
+        <div class="row mb-3 text-center aligns-items-center justify-content-center">
+            <div class="col">
+                <div style="min-width:420px;" class="card rounded-3 shadow-sm">
+                    <div class="card-body">
+                        <h3 class="card-title pricing-card-title">Concentrações:</h3>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Concentração</th>
+                                    <th scope="col">Compra</th>
+                                    <th scope="col">Venda</th>
+                                    <th scope="col">Quantidade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var concentration in Product.SelectedDrugsConcentrations)
+                            {
+                                <tr>
+                                    <td>@concentration.ConcentrationDescription</td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input style="max-width:100px;" type="number" class="form-control" placeholder="0"
+                                                @bind="concentration.PurchasePrice"/>
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">R$</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input style="max-width:100px;" type="number" class="form-control" placeholder="0"
+                                                @bind="concentration.SellingPrice"/>
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">R$</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input style="max-width:100px;" type="number" class="form-control" placeholder="0"
+                                                @bind="concentration.TotalStockQuantity"/>
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">R$</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                        <div class="row aligns-items-center justify-content-center">
+                            <div class="col-8">
+                                <button style="width: 120px;" @onclick="async (args) => await SaveUpdatedProductMedicine(args)" type="button" 
+                                    class="btn btn-lg btn-outline-primary">Atualizar</button>
+                                <button style="width: 120px;" @onclick="(args) => CancelUpdateProductMedicine(args)" type="button" 
+                                    class="btn btn-lg btn-outline-dark">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+@code {
+    [Parameter]
+    public string ProductId { get; set; } = "";
+
+    #region Page Controls
+    ProductVM Product { get; set; } = new();
+    bool HasConcentration { get; set; } = false;
+    List<MeasurementUnitVM> MeasurementUnits = new();
+    MeasurementUnitVM SelectedMeasurementUnit { get; set; } = new();
+    double NewConcentrationValue { get; set; }
+    #endregion
+
+    async Task SaveUpdatedProductMedicine(MouseEventArgs args)
+    {
+        await _productsService.UpdateProduct(Product);
+        _navigationManager.NavigateTo("/estoque");
+        var message = new NotificationMessage 
+        { 
+            Severity = NotificationSeverity.Success, 
+            Summary = "Estoque Atualizado", 
+            Detail = $"Estoque de [{Product.Name}] atualizado!", 
+            Duration = 8000 
+        };
+        _notificationService.Notify(message);
+    }
+
+    void CancelUpdateProductMedicine(MouseEventArgs args)
+    {
+        _navigationManager.NavigateTo("/estoque");
+    }
+
+    #region Overrides
+    protected override async Task OnInitializedAsync()
+    {
+        MeasurementUnits = await _measurementUnitsService.GetAll();
+        Product = await _productsService.GetProductById(ProductId);
+        if(Product != null)
+        {
+            if (Product.SelectedDrugsConcentrations !=  null && Product.SelectedDrugsConcentrations.Any())
+            {
+                HasConcentration = true;
+            }
+            else
+            {
+                HasConcentration = false;
+            }
+            SelectedMeasurementUnit = MeasurementUnits?.FirstOrDefault(m => m.MeasurementUnitId == Product.MeasurementUnitId);
+        }
+        await base.OnInitializedAsync();
+    }
+    #endregion
+}

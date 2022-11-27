@@ -1,14 +1,15 @@
-﻿@page "/produtos/novo"
+﻿@page "/produtos/editar/{ProductId}"
 @using static ManagementUI.ViewModels.ProductVM
 
 @inject NotificationService _notificationService
 @inject NavigationManager _navigationManager
 
 @inject IProducsService _productsService
+@inject IMeasurementUnitsService _measurementUnitsService
 
 <div class="row mb-3">
     <div class="col-12">
-        <h1 class="text-center">Novo Medicamento</h1>
+        <h1 class="text-center">Editar Medicamento/Material</h1>
     </div>
 </div>
 
@@ -19,7 +20,7 @@
             <div class="col-lg-8 p-3">
                 <RadzenCard>
                     <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Nome</RadzenText>
-                    <RadzenTextBox @bind-Value="Name" Placeholder="Cataflan..." Class="w-100" />
+                    <RadzenTextBox @bind-Value="Product.Name" Placeholder="Cataflan..." Class="w-100" />
                 </RadzenCard>
             </div>
         </div>
@@ -27,7 +28,7 @@
             <div class="col-lg-8 p-3">
                 <RadzenCard>
                     <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Descrição</RadzenText>
-                    <RadzenTextArea @bind-Value=@Description Placeholder="Esse medicamento server para isso, aquilo, etc..." Class="w-100" />
+                    <RadzenTextArea @bind-Value=@Product.Description Placeholder="Esse medicamento server para isso, aquilo, etc..." Class="w-100" />
                 </RadzenCard>
             </div>
         </div>
@@ -50,7 +51,10 @@
                         <RadzenCard>
                             <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Unidade de Medida</RadzenText>
                             <RadzenDropDown AllowClear="true" TValue="string" Class="w-100" 
-                                Data=@MeasurementUnits TextProperty="MeasurementUnitDescription"
+                                Data=@MeasurementUnits 
+                                TextProperty="MeasurementUnitDescription"
+                                ValueProperty="MeasurementUnitId"
+                                @bind-Value="SelectedMeasurementUnit.MeasurementUnitId"
                                 Change=@(args => OnChangeMeasurementUnit((MeasurementUnitVM)args)) />
                         </RadzenCard>
                         <RadzenCard>
@@ -63,7 +67,7 @@
                             <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Concentrações Selecionadas:</RadzenText>
                             <RadzenDropDown Multiple="true" Chips="true" MaxSelectedLabels="20" AllowClear="true" 
                                 AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" 
-                                Data=@SelectedDrugsConcentrations @bind-Value=@SelectedDrugsConcentrations
+                                Data=@Product.SelectedDrugsConcentrations @bind-Value=@Product.SelectedDrugsConcentrations
                                 TextProperty="ConcentrationDescription" Class="w-100" />
                         </RadzenCard>
                     </RadzenCard>
@@ -77,9 +81,9 @@
             <div class="row d-flex aligns-items-center justify-content-center">
                 <div class="col-lg-3 p-3 text-center">
                     <h3>Deseja Salvar?</h3>
-                    <RadzenButton Click=@(args => SaveNewProductMedicine(args)) ButtonStyle="ButtonStyle.Success" 
+                    <RadzenButton Click=@(async (args) => await SaveUpdatedProductMedicine(args)) ButtonStyle="ButtonStyle.Success" 
                         Size="ButtonSize.ExtraSmall" Text="Salvar"/>
-                    <RadzenButton Click=@(args => SaveNewProductMedicine(args)) ButtonStyle="ButtonStyle.Dark" 
+                    <RadzenButton Click=@(args => CancelUpdateProductMedicine(args)) ButtonStyle="ButtonStyle.Dark" 
                         Size="ButtonSize.ExtraSmall" Text="Cancelar"/>
                 </div>
             </div>
@@ -93,7 +97,7 @@
             <div class="col-lg-8 p-3">
                 <RadzenCard>
                     <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Nome</RadzenText>
-                    <RadzenTextBox @bind-Value="Name" Placeholder="Cataflan..." Class="w-100" Disabled />
+                    <RadzenTextBox @bind-Value="Product.Name" Placeholder="Cataflan..." Class="w-100" Disabled />
                 </RadzenCard>
             </div>
         </div>
@@ -101,7 +105,7 @@
             <div class="col-lg-8 p-3">
                 <RadzenCard>
                     <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Descrição</RadzenText>
-                    <RadzenTextArea @bind-Value=@Description Placeholder="Esse medicamento server para isso, aquilo, etc..." Class="w-100" Disabled />
+                    <RadzenTextArea @bind-Value=@Product.Description Placeholder="Esse medicamento server para isso, aquilo, etc..." Class="w-100" Disabled />
                 </RadzenCard>
             </div>
         </div>
@@ -120,14 +124,13 @@
                     <RadzenCard>
                         <RadzenCard>
                             <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Unidade de Medida</RadzenText>
-                            <RadzenDropDown Disabled AllowClear="true" TValue="string" Class="w-100" 
-                                Data=@MeasurementUnits TextProperty="MeasurementUnitDescription" />
+                            <RadzenTextBox @bind-Value="SelectedMeasurementUnit.MeasurementUnitDescription" Disabled />
                         </RadzenCard>
                         <RadzenCard>
                             <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Concentrações Selecionadas:</RadzenText>
                             <RadzenDropDown Disabled Multiple="true" Chips="true" MaxSelectedLabels="20" AllowClear="true" 
                                 AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" 
-                                Data=@SelectedDrugsConcentrations @bind-Value=@SelectedDrugsConcentrations
+                                Data=@Product.SelectedDrugsConcentrations @bind-Value=@Product.SelectedDrugsConcentrations
                                 TextProperty="ConcentrationDescription" Class="w-100" />
                         </RadzenCard>
                     </RadzenCard>
@@ -142,33 +145,33 @@
             <a class="page-link" @onclick="(args)=>PreviousPageNumber(args)">Voltar</a>
         </li>
         <li class="page-item">
+            <a class="page-link" @onclick="(args)=>SetPageNumber(args, 1)">1</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" @onclick="(args)=>SetPageNumber(args, 2)">2</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" @onclick="(args)=>SetPageNumber(args, 3)">3</a>
+        </li>
+        <li class="page-item">
             <a class="page-link" @onclick="(args)=>NextPageNumber(args)">Próximo</a>
         </li>
     </ul>
 </nav>
 
 @code {
+    [Parameter]
+    public string ProductId { get; set; } = "";
+
+    #region Page Controls
+    ProductVM Product { get; set; } = new();
     bool HasConcentration { get; set; } = false;
     static int MAXPAGENUMBER = 3;
     int CurrentPageNumber { get; set; } = 1;
-    string Name { get; set; } = "";
-    string Description { get; set; } = "";
-    List<ConcentrationVM> SelectedDrugsConcentrations = new();
-    List<MeasurementUnitVM> MeasurementUnits = new()
-    {
-        new MeasurementUnitVM()
-        {
-            MeasurementUnitId = 1,
-            MeasurementUnitDescription = "mg/ml"
-        },
-        new MeasurementUnitVM()
-        {
-            MeasurementUnitId = 1,
-            MeasurementUnitDescription = "mcg/ml"
-        }
-    };
+    List<MeasurementUnitVM> MeasurementUnits = new();
     MeasurementUnitVM SelectedMeasurementUnit { get; set; } = new();
     double NewConcentrationValue { get; set; }
+    #endregion
 
     void NextPageNumber(MouseEventArgs e)
     {
@@ -198,14 +201,14 @@
 
     void OnChangeMeasurementUnit(MeasurementUnitVM e)
     {
+        Product.MeasurementUnitId = e.MeasurementUnitId;
         SelectedMeasurementUnit = new MeasurementUnitVM()
         {
-            MeasurementUnitId = e.MeasurementUnitId,
+            MeasurementUnitId = Product.MeasurementUnitId,
             MeasurementUnitDescription = e.MeasurementUnitDescription
         };
-        foreach(var concentration in SelectedDrugsConcentrations)
+        foreach(var concentration in Product.SelectedDrugsConcentrations)
         {
-            concentration.MeasurementUnitId = SelectedMeasurementUnit.MeasurementUnitId;
             concentration.ConcentrationDescription = $"{concentration.ConcentrationValue} {SelectedMeasurementUnit.MeasurementUnitDescription}";
         }
     }
@@ -214,9 +217,8 @@
     {
         if (!ValidadeMeasurementUnit() || !ValidadeNewConcentration())
             return;
-        SelectedDrugsConcentrations.Add(new ConcentrationVM()
+        Product.SelectedDrugsConcentrations.Add(new ConcentrationVM()
         {
-            MeasurementUnitId = SelectedMeasurementUnit.MeasurementUnitId,
             ConcentrationValue = NewConcentrationValue,
             ConcentrationDescription = $"{NewConcentrationValue} {SelectedMeasurementUnit.MeasurementUnitDescription}"
         });
@@ -236,7 +238,7 @@
 
     bool ValidateFirstPage()
     {
-        if(string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(Description))
+        if(string.IsNullOrEmpty(Product.Name) || string.IsNullOrEmpty(Product.Description))
         {
             var message = new NotificationMessage 
             { 
@@ -286,7 +288,7 @@
     {
         if(SelectedMeasurementUnit == null ||
             string.IsNullOrEmpty(SelectedMeasurementUnit?.MeasurementUnitDescription) ||
-            SelectedMeasurementUnit?.MeasurementUnitId == 0)
+            string.IsNullOrEmpty(SelectedMeasurementUnit?.MeasurementUnitId))
         {
             return false;
         }
@@ -302,34 +304,49 @@
 
     bool ValidadeSelectedConcentrations()
     {
-        if (SelectedDrugsConcentrations == null ||
-            ( !SelectedDrugsConcentrations.Any()))
+        if (Product.SelectedDrugsConcentrations == null ||
+            ( !Product.SelectedDrugsConcentrations.Any()))
             return false;
         return true;
     }
 
-    async Task SaveNewProductMedicine(MouseEventArgs args)
+    async Task SaveUpdatedProductMedicine(MouseEventArgs args)
     {
-        ProductVM productVM = new ProductVM()
-        {
-            Name = Name,
-            Description = Description,
-            SelectedDrugsConcentrations = SelectedDrugsConcentrations
-        };
-        await _productsService.CreateNewProduct(productVM);
-        _navigationManager.NavigateTo("/products");
+        await _productsService.UpdateProduct(Product);
+        _navigationManager.NavigateTo("/produtos");
         var message = new NotificationMessage 
         { 
             Severity = NotificationSeverity.Success, 
-            Summary = "Novo Medicamento Criado", 
-            Detail = $"Medicamento {Name} adicionado!", 
+            Summary = "Medicamento/Material Atualizado", 
+            Detail = $"Medicamento {Product.Name} atualizado!", 
             Duration = 8000 
         };
         _notificationService.Notify(message);
     }
 
-    async Task CancelNewProductMedicine(MouseEventArgs args)
+    void CancelUpdateProductMedicine(MouseEventArgs args)
     {
-        
+        _navigationManager.NavigateTo("/produtos");
     }
+
+    #region Overrides
+    protected override async Task OnInitializedAsync()
+    {
+        MeasurementUnits = await _measurementUnitsService.GetAll();
+        Product = await _productsService.GetProductById(ProductId);
+        if(Product != null)
+        {
+            if (Product.SelectedDrugsConcentrations !=  null && Product.SelectedDrugsConcentrations.Any())
+            {
+                HasConcentration = true;
+            }
+            else
+            {
+                HasConcentration = false;
+            }
+            SelectedMeasurementUnit = MeasurementUnits?.FirstOrDefault(m => m.MeasurementUnitId == Product.MeasurementUnitId);
+        }
+        await base.OnInitializedAsync();
+    }
+    #endregion
 }
