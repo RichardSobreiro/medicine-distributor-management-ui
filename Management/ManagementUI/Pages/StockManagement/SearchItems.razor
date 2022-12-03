@@ -1,68 +1,80 @@
 ﻿@page "/"
 @page "/estoque"
 
-<PageTitle>Estoque</PageTitle>
-
 @inject NotificationService _notificationService
 @inject NavigationManager _navigationManager
 
 @inject IProducsService _productsService
 
-<div class="row">
-    <div class="col">
-        <h1>Gestão de Estoque</h1>
-    </div>
-</div>
-
-<div class="input-group mb-3">
-    <span class="input-group-text" id="inputGroup-sizing-default">Pesquisa por Nome</span>
-    <input @bind="PartialProductName" type="text" class="form-control" 
-        aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
-    <button @onclick="@(async (args) => await SearchProducts(args))" type="button" class="btn btn-outline-primary btn-lg">
-        <i class="bi bi-search p-2"></i>Procurar
-    </button>
-</div>
-
-@foreach(var product in products)
-{
-    <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
-        <div class="col">
-            <div style="min-width:390px;" class="card mb-4 rounded-3 shadow-sm">
-                <div class="card-header py-3">
-                    <h4 class="my-0 fw-normal">@product.Name</h4>
-                </div>
-                <div class="card-body">
-                    <h1 class="card-title pricing-card-title">Concentrações:</h1>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Concentração</th>
-                                <th scope="col">Compra</th>
-                                <th scope="col">Venda</th>
-                                <th scope="col">Quantidade</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        @foreach (var concentration in product.SelectedDrugsConcentrations)
-                        {
-                            <tr>
-                                <td>@concentration.ConcentrationDescription</td>
-                                <td>@concentration.PurchasePrice</td>
-                                <td>@concentration.SellingPrice</td>
-                                <td>@concentration.TotalStockQuantity</td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
-                    <button @onclick="(args) => NavigateToUpdateStock(args, product.Id)" type="button" 
-                        class="w-100 btn btn-lg btn-outline-primary">Editar</button>
-                </div>
+<AuthorizeView>
+    <NotAuthorized>
+        <h1>Seja Bem Vindo!</h1>
+		Faça o seu <a @onclick="BeginSignIn" href="#">login</a> e comece gerenciar a distribuidora de medicamentos online!
+    </NotAuthorized>
+    <Authorized>
+        <PageTitle>Estoque</PageTitle>
+        <div class="row">
+            <div class="col">
+                <h1>Gestão de Estoque</h1>
             </div>
         </div>
-    </div>
-}
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="inputGroup-sizing-default">Pesquisa por Nome</span>
+            <input @bind="PartialProductName" type="text" class="form-control" 
+                aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+            <button @onclick="@(async (args) => await SearchProducts(args))" type="button" class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-search p-2"></i>Procurar
+            </button>
+        </div>
+
+        @foreach(var product in products)
+        {
+            <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+                <div class="col">
+                    <div style="min-width:390px;" class="card mb-4 rounded-3 shadow-sm">
+                        <div class="card-header py-3">
+                            <h4 class="my-0 fw-normal">@product.Name</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">Concentrações:</h1>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Concentração</th>
+                                        <th scope="col">Compra</th>
+                                        <th scope="col">Venda</th>
+                                        <th scope="col">Quantidade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var concentration in product.SelectedDrugsConcentrations)
+                                {
+                                    <tr>
+                                        <td>@concentration.ConcentrationDescription</td>
+                                        <td>@concentration.PurchasePrice</td>
+                                        <td>@concentration.SellingPrice</td>
+                                        <td>@concentration.TotalStockQuantity</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                            <button @onclick="(args) => NavigateToUpdateStock(args, product.Id)" type="button" 
+                                class="w-100 btn btn-lg btn-outline-primary">Editar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </Authorized>
+</AuthorizeView>
 
 @code {
+    private void BeginSignIn()
+    {
+		_navigationManager.NavigateTo("authentication/login");
+    }
+
     string? PartialProductName { get; set; }
     List<ProductVM> products { get; set; } = new();
 

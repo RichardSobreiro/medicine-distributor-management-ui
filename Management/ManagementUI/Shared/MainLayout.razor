@@ -1,20 +1,55 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inherits LayoutComponentBase
+
+@inject NavigationManager _navigationManager
+@inject SignOutSessionStateManager _signOutManager
 
 <RadzenNotification />
-
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="#" target="_blank">Sobre</a>
-            <a href="#" target="_blank">Login</a>
+<AuthorizeView>
+    <Authorized>
+        <div class="page">
+            <div class="sidebar">
+                <NavMenu />
+            </div>
+            <main>
+                <div class="top-row px-4">
+                    <a href="#" target="_blank">Sobre</a>
+                    <a href="#" target="_blank" @onclick="async () => await BeginSignOut()">Logout</a>
+                </div>
+                <article class="content px-4">
+                    @Body
+                </article>
+            </main>
         </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="page">
+            <main>
+                @*<div class="sidebar">
+                    <NavMenu />
+                </div>*@
+                <div class="top-row px-4">
+                    <a href="#" target="_blank">Sobre</a>
+                    <a href="#" @onclick="BeginSignIn">Login</a>
+                </div>
+                <article class="content px-4">
+                    @Body
+                </article>
+            </main>
+        </div>			
+	</NotAuthorized>
+</AuthorizeView>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+@code{
+    private void BeginSignIn()
+    {
+        _navigationManager.NavigateTo("authentication/login");
+    }
+
+    private async Task BeginSignOut()
+    {
+        await _signOutManager.SetSignOutState();
+        _navigationManager.NavigateTo("authentication/logout");
+    }
+}
+

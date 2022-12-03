@@ -1,7 +1,20 @@
-﻿@*@page "/"
-*@
+﻿@*@page "/"*@
+
+@inject NavigationManager _navigationManager
+
 <PageTitle>Inicio</PageTitle>
 
-<h1>Seja Bem Vindo!</h1>
+<AuthorizeView>
+	<NotAuthorized>	
+		<h1>Seja Bem Vindo!</h1>
+		Faça o seu <a @onclick="BeginSignIn" href="#">login</a> e comece gerenciar a distribuidora de medicamentos online!
+	</NotAuthorized>
+</AuthorizeView>
 
-Faça o seu <a href="#">login</a> e comece gerenciar a distribuidora de medicamentos online!
+@code{
+    private void BeginSignIn()
+    {
+		_navigationManager.NavigateTo("authentication/login");
+    }
+}
+
