@@ -25,7 +25,6 @@ builder.Services
     .AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("WebAPI"))
     .AddHttpClient("WebAPI", client => client.BaseAddress = new Uri(backendOrigin))
     .AddHttpMessageHandler<CustomAuthorizationHeaderHandler>();
-//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration.GetValue<string>("BaseAPIUrl")) });
 builder.Services.AddCustomAuthentication(options =>
 {
     builder.Configuration.Bind("Oidc", options.ProviderOptions);
