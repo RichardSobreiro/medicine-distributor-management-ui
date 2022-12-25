@@ -37,36 +37,63 @@
                         <div class="card-header py-3">
                             <h4 class="my-0 fw-normal">@product.Name</h4>
                         </div>
-                        <div class="card-body">
-                            <h1 class="card-title pricing-card-title">Concentrações:</h1>
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Concentração</th>
-                                        <th scope="col">Compra</th>
-                                        <th scope="col">Venda</th>
-                                        <th scope="col">Quantidade</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                @foreach (var concentration in product.SelectedDrugsConcentrations)
-                                {
-                                    <tr>
-                                        <td>@concentration.ConcentrationDescription</td>
-                                        <td>@concentration.PurchasePrice</td>
-                                        <td>@concentration.SellingPrice</td>
-                                        <td>@concentration.TotalStockQuantity</td>
-                                    </tr>
-                                }
-                                </tbody>
-                            </table>
-                            <button @onclick="(args) => NavigateToUpdateStock(args, product.Id)" type="button" 
-                                class="w-100 btn btn-lg btn-outline-primary">Editar</button>
-                        </div>
+                        @if(product.SelectedDrugsConcentrations.Any())
+                        {
+                            <div class="card-body">
+                                <h1 class="card-title pricing-card-title">Concentrações:</h1>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Concentração</th>
+                                            <th scope="col">Compra</th>
+                                            <th scope="col">Venda</th>
+                                            <th scope="col">Quantidade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach (var concentration in product.SelectedDrugsConcentrations)
+                                    {
+                                        <tr>
+                                            <td>@concentration.ConcentrationDescription</td>
+                                            <td>@concentration.PurchasePrice</td>
+                                            <td>@concentration.SellingPrice</td>
+                                            <td>@concentration.TotalStockQuantity</td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                                <button @onclick="(args) => NavigateToUpdateStock(args, product.Id)" type="button" 
+                                    class="w-100 btn btn-lg btn-outline-primary">Editar</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="card-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Compra</th>
+                                            <th scope="col">Venda</th>
+                                            <th scope="col">Quantidade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>@product.PurchasePrice</td>
+                                            <td>@product.SellingPrice</td>
+                                            <td>@product.TotalStockQuantity</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <button @onclick="(args) => NavigateToUpdateStock(args, product.Id)" type="button" 
+                                    class="w-100 btn btn-lg btn-outline-primary">Editar</button>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
         }
+
     </Authorized>
 </AuthorizeView>
 
@@ -94,30 +121,6 @@
 
     bool ValidateProductsSearch()
     {
-        if (string.IsNullOrEmpty(PartialProductName))
-        {
-            var message = new NotificationMessage 
-            { 
-                Severity = NotificationSeverity.Error, 
-                Summary = "Campos Inválidos", 
-                Detail = "Preencha um valor para o nome do produto ou medicamento!", 
-                Duration = 5000 
-            };
-            _notificationService.Notify(message);
-            return false;
-        }
-        if (PartialProductName.Length < 3)
-        {
-            var message = new NotificationMessage 
-            { 
-                Severity = NotificationSeverity.Error, 
-                Summary = "Campos Inválidos", 
-                Detail = "O nome do produto ou medicamento precisa ser maior ou igual a 3 caracteres!", 
-                Duration = 5000 
-            };
-            _notificationService.Notify(message);
-            return false;
-        }
         return true;
     }
 }

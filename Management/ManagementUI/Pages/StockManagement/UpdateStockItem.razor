@@ -17,14 +17,14 @@
     <div class="row d-flex aligns-items-center justify-content-center">
         <div style="min-width:420px;" class="col-lg-4 m-1">
             <div class="card">
-                <div class="card-body">@Product.Name</div>
+                <div class="card-body"><h6 class="card-title pricing-card-title">Nome:</h6>@Product.Name</div>
             </div>
         </div>
     </div>
     <div class="row d-flex aligns-items-center justify-content-center">
         <div style="min-width:420px;" class="col-lg-4 m-1">
             <div class="card">
-                <div class="card-body">@Product.Description</div>
+                <div class="card-body"><h6 class="card-title pricing-card-title">Descrição:</h6>@Product.Description</div>
             </div>
         </div>
     </div>
@@ -78,6 +78,65 @@
                                     </td>
                                 </tr>
                             }
+                            </tbody>
+                        </table>
+                        <div class="row aligns-items-center justify-content-center">
+                            <div class="col-8">
+                                <button style="width: 120px;" @onclick="async (args) => await SaveUpdatedProductMedicine(args)" type="button" 
+                                    class="btn btn-lg btn-outline-primary">Atualizar</button>
+                                <button style="width: 120px;" @onclick="(args) => CancelUpdateProductMedicine(args)" type="button" 
+                                    class="btn btn-lg btn-outline-dark">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row mb-3 text-center aligns-items-center justify-content-center">
+            <div class="col">
+                <div style="min-width:420px;" class="card rounded-3 shadow-sm">
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Compra</th>
+                                    <th scope="col">Venda</th>
+                                    <th scope="col">Quantidade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="input-group">
+                                            <input style="max-width:100px;" type="number" class="form-control" placeholder="0"
+                                                @bind="Product.PurchasePrice"/>
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">R$</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input style="max-width:100px;" type="number" class="form-control" placeholder="0"
+                                                @bind="Product.SellingPrice"/>
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">R$</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input style="max-width:100px;" type="number" class="form-control" placeholder="0"
+                                                @bind="Product.TotalStockQuantity"/>
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">R$</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                         <div class="row aligns-items-center justify-content-center">
